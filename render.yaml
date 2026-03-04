@@ -1,0 +1,26 @@
+databases:
+  - name: psa-db
+    plan: free
+    databaseName: psa
+    user: psa
+
+services:
+  - type: web
+    name: psa
+    plan: free
+    runtime: docker
+    repo: https://github.com/milosptr/player-support-assistant-demo
+    branch: main
+    healthCheckPath: /api/health/
+    dockerCommand: sh -c "python manage.py migrate && python manage.py seed_tickets && gunicorn psa.wsgi:application --bind 0.0.0.0:8000 --workers 3"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: psa-db
+          property: connectionString
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: DEBUG
+        value: "false"
