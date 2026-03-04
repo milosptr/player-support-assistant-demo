@@ -43,8 +43,13 @@ export default function Dashboard() {
 
   // Sync debounced search to URL params
   useEffect(() => {
-    setParam('search', search);
-  }, [search, setParam]);
+    setSearchParams(prev => {
+      const params = new URLSearchParams(prev);
+      if (search) params.set('search', search);
+      else params.delete('search');
+      return params;
+    }, { replace: true });
+  }, [search, setSearchParams]);
 
   const setStatus = (s: Status | '') => setParam('status', s);
   const setCategory = (c: Category | '') => setParam('category', c);
