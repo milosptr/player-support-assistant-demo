@@ -53,7 +53,7 @@ This project is built in 6 sequential phases. See @phases/README.md for overview
 - @phases/phase-5-production-wiring.md — Django serves React, multi-stage Docker
 - @phases/phase-6-cicd-deployment.md — CI/CD, Render.com, README
 
-**Current phase: 4 (Frontend)** — Phases 1–4 are complete and ready to commit.
+**Current phase: 5 (Production Wiring)** — Phases 1–5 are complete.
 
 IMPORTANT: Always check which phase we're on before making changes. Don't pull in work from later phases.
 
@@ -61,6 +61,13 @@ IMPORTANT: Always check which phase we're on before making changes. Don't pull i
 
 - During planning, always ask followup questions to understand requirements before implementing. Do not guess or predict what I want — ask.
 - Minimize assumptions. If something is ambiguous or has multiple valid approaches, clarify first.
+- After implementing a plan, always run the full test and lint suite before committing:
+  - `cd backend && DATABASE_URL= python manage.py test` (SQLite fallback when no Postgres)
+  - `cd backend && flake8 . --max-line-length=120 --exclude=migrations,__pycache__`
+  - `cd frontend && npx eslint src/ --max-warnings 0`
+  - `cd frontend && npx tsc --noEmit`
+  - `cd frontend && npm run build`
+- After implementing a plan, run `/simplify` to review the changed code for quality issues before committing.
 
 ## Architecture Rules
 
