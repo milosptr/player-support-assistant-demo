@@ -124,6 +124,52 @@ class TicketAPITest(TestCase):
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['category'], 'billing')
 
+    def test_resolve_already_resolved(self):
+        self.ticket.status = 'resolved'
+        self.ticket.save()
+        response = self.client.post(
+            f'/api/tickets/{self.ticket.id}/resolve/',
+            {'agent_response': 'Trying again.'},
+            format='json',
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data['detail'], 'Ticket is already resolved.')
+
+    def test_in_progress_on_resolved(self):
+        self.ticket.status = 'resolved'
+        self.ticket.save()
+        response = self.client.post(
+            f'/api/tickets/{self.ticket.id}/in-progress/',
+            format='json',
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data['detail'], 'Cannot reopen a resolved ticket.')
+
+    def test_resolve_sets_resolved_at(self):
+        response = self.client.post(
+            f'/api/tickets/{self.ticket.id}/resolve/',
+            {'agent_response': 'Fixed it.'},
+            format='json',
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNotNone(response.data['resolved_at'])
+
+    def test_search_by_player_name(self):
+        Ticket.objects.create(
+            player_name='UniquePlayer', subject='Some issue', message='Help me',
+        )
+        response = self.client.get('/api/tickets/?search=UniquePl', format='json')
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['player_name'], 'UniquePlayer')
+
+    def test_search_by_subject(self):
+        Ticket.objects.create(
+            player_name='Someone', subject='Warp tunnel glitch', message='Stuck',
+        )
+        response = self.client.get('/api/tickets/?search=warp+tunnel', format='json')
+        self.assertEqual(len(response.data), 1)
+        self.assertIn('Warp tunnel', response.data[0]['subject'])
+
 
 class SeedCommandTest(TestCase):
     def test_seed_creates_tickets(self):
@@ -193,6 +239,50 @@ class AIServiceTest(TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data['ai_category'], '')
         self.assertEqual(response.data['ai_response'], '')
+
+    @patch('tickets.ai_service.requests.post')
+    @patch.dict('os.environ', {'OPENROUTER_API_KEY': 'test-key'})
+    def test_regenerate_on_resolved_returns_400(self, mock_post):
+        ticket = Ticket.objects.create(
+            player_name='TestPilot', subject='Ship stuck', message='My ship is stuck.',
+            category='bug', status='resolved', ai_response='Original.',
+        )
+        response = self.client.post(f'/api/tickets/{ticket.id}/regenerate/')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data['detail'], 'Cannot regenerate for a resolved ticket.')
+        mock_post.assert_not_called()
+
+    @patch('tickets.ai_service.requests.post')
+    @patch.dict('os.environ', {'OPENROUTER_API_KEY': 'test-key'})
+    def test_regenerate_ai_response(self, mock_post):
+        ticket = Ticket.objects.create(
+            player_name='TestPilot', subject='Ship stuck', message='My ship is stuck in warp.',
+            category='bug', ai_category='bug', ai_response='Original response.',
+        )
+        mock_post.return_value = self._mock_openrouter_response(
+            '{"category": "gameplay", "response": "New regenerated response."}'
+        )
+        response = self.client.post(f'/api/tickets/{ticket.id}/regenerate/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['ai_response'], 'New regenerated response.')
+        # Category should remain unchanged
+        self.assertEqual(response.data['category'], 'bug')
+        self.assertEqual(response.data['ai_category'], 'bug')
+
+    @patch('tickets.ai_service.requests.post')
+    @patch.dict('os.environ', {'OPENROUTER_API_KEY': 'test-key'})
+    def test_regenerate_ai_failure_returns_502(self, mock_post):
+        from requests.exceptions import RequestException
+        ticket = Ticket.objects.create(
+            player_name='TestPilot', subject='Ship stuck', message='My ship is stuck in warp.',
+            category='bug', ai_category='bug', ai_response='Original response.',
+        )
+        mock_post.side_effect = RequestException("Connection error")
+        response = self.client.post(f'/api/tickets/{ticket.id}/regenerate/')
+        self.assertEqual(response.status_code, 502)
+        # Original response should be unchanged
+        ticket.refresh_from_db()
+        self.assertEqual(ticket.ai_response, 'Original response.')
 
     @patch('tickets.ai_service.requests.post')
     @patch.dict('os.environ', {'OPENROUTER_API_KEY': 'test-key'})
