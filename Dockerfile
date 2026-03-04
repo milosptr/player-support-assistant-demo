@@ -17,4 +17,4 @@ COPY --from=frontend-build /app/frontend/dist /app/frontend/dist
 RUN DJANGO_SECRET_KEY=build-placeholder python manage.py collectstatic --noinput
 
 EXPOSE 8000
-CMD ["gunicorn", "psa.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]
+CMD ["./start.sh"]
