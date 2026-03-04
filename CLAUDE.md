@@ -53,6 +53,8 @@ This project is built in 6 sequential phases. See @phases/README.md for overview
 - @phases/phase-5-production-wiring.md — Django serves React, multi-stage Docker
 - @phases/phase-6-cicd-deployment.md — CI/CD, Render.com, README
 
+**Current phase: 2 (Backend Core)** — Phase 1 is complete and committed.
+
 IMPORTANT: Always check which phase we're on before making changes. Don't pull in work from later phases.
 
 ## Working Style
@@ -82,7 +84,7 @@ IMPORTANT: Always check which phase we're on before making changes. Don't pull i
 
 ## Git Rules
 
-IMPORTANT: Never include `Co-Authored-By` lines in commit messages. No co-author attribution of any kind. Clean commit messages only.
+IMPORTANT: Everything must look human-written. No co-author lines, no AI-style commit messages, no scaffold boilerplate left behind. Clean up Vite/Django template leftovers (generic READMEs, placeholder titles, unused logos, TypeScript types in JS projects, etc.) before committing.
 
 - Conventional commit style: `feat:`, `fix:`, `chore:`, `docs:`
 - Do not commit `.env`, API keys, or secrets
