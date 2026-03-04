@@ -1,11 +1,10 @@
-import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import type { TicketSummary } from '../types';
 import { formatRelativeTime } from '../utils/formatTime';
 import CategoryBadge from './CategoryBadge';
 import StatusBadge from './StatusBadge';
 
-export default memo(function TicketTable({ tickets }: { tickets: TicketSummary[] }) {
+export default function TicketTable({ tickets }: { tickets: TicketSummary[] }) {
   if (tickets.length === 0) {
     return (
       <div className="overflow-hidden rounded-lg border border-gray-800/60 bg-gray-900/50">
@@ -66,4 +65,4 @@ export default memo(function TicketTable({ tickets }: { tickets: TicketSummary[]
       </table>
     </div>
   );
-});
+}

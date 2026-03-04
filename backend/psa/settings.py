@@ -13,7 +13,7 @@ SECRET_KEY = os.environ.get(
     'django-insecure-dev-key-do-not-use-in-production'
 )
 
-DEBUG = os.environ.get('DEBUG', 'true').lower() == 'true'
+DEBUG = os.environ.get('DEBUG', 'false').lower() == 'true'
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
@@ -81,8 +81,8 @@ if os.path.isdir(FRONTEND_DIR):
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Wide open for dev — lock down in prod
-CORS_ALLOW_ALL_ORIGINS = True
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
 
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

@@ -36,6 +36,9 @@ export default function TicketDetail() {
       queryClient.invalidateQueries({ queryKey: ticketKeys.stats() });
       showToast('Marked in progress');
     },
+    onError: () => {
+      showToast('Failed to update ticket', 'error');
+    },
   });
 
   const regenerateMutation = useMutation({
@@ -61,6 +64,9 @@ export default function TicketDetail() {
       queryClient.invalidateQueries({ queryKey: ticketKeys.stats() });
       showToast('Ticket resolved');
       navigate('/');
+    },
+    onError: () => {
+      showToast('Failed to update ticket', 'error');
     },
   });
 
