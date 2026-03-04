@@ -1,7 +1,10 @@
+import uuid
+
 from django.db import models
 
 
 class Ticket(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     CATEGORY_CHOICES = [
         ('bug', 'Bug Report'),
         ('billing', 'Billing Issue'),
@@ -24,6 +27,7 @@ class Ticket(models.Model):
     ai_category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, blank=True)
     ai_response = models.TextField(blank=True)
     agent_response = models.TextField(blank=True)
+    resolved_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

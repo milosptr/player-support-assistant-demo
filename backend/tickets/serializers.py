@@ -15,7 +15,7 @@ class TicketDetailSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'player_name', 'subject', 'message',
             'category', 'status', 'ai_category', 'ai_response',
-            'agent_response', 'created_at', 'updated_at',
+            'agent_response', 'resolved_at', 'created_at', 'updated_at',
         ]
 
 

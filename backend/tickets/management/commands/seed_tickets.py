@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 
 from tickets.models import Ticket
 
@@ -256,5 +257,8 @@ class Command(BaseCommand):
         for data in TICKETS:
             Ticket.objects.create(**data)
             self.stdout.write(f'  Created: {data["subject"][:50]}')
+
+        # Set resolved_at for resolved tickets
+        Ticket.objects.filter(status='resolved').update(resolved_at=timezone.now())
 
         self.stdout.write(self.style.SUCCESS(f'Seeded {len(TICKETS)} tickets.'))
