@@ -1,11 +1,16 @@
-import type { Category, Status } from '../types';
-import { CATEGORIES, STATUSES, CATEGORY_CONFIG, STATUS_CONFIG } from '../utils/constants';
+import type { Category, Status } from "../types";
+import {
+  CATEGORIES,
+  STATUSES,
+  CATEGORY_CONFIG,
+  STATUS_CONFIG,
+} from "../utils/constants";
 
 interface Props {
-  status: Status | '';
-  category: Category | '';
-  onStatusChange: (status: Status | '') => void;
-  onCategoryChange: (category: Category | '') => void;
+  status: Status | "";
+  category: Category | "";
+  onStatusChange: (status: Status | "") => void;
+  onCategoryChange: (category: Category | "") => void;
 }
 
 function Toggle({
@@ -21,10 +26,10 @@ function Toggle({
     <button
       onClick={onClick}
       aria-pressed={active}
-      className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+      className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
         active
-          ? 'bg-blue-600 text-white'
-          : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+          ? "bg-teal-500/15 text-teal-300 ring-1 ring-teal-500/30"
+          : "bg-gray-800/80 text-gray-400 hover:bg-gray-700/80 hover:text-gray-300"
       }`}
     >
       {label}
@@ -32,12 +37,23 @@ function Toggle({
   );
 }
 
-export default function TicketFilters({ status, category, onStatusChange, onCategoryChange }: Props) {
+export default function TicketFilters({
+  status,
+  category,
+  onStatusChange,
+  onCategoryChange,
+}: Props) {
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 p-4">
       <div className="flex items-center gap-2">
-        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider w-16">Status</span>
-        <Toggle active={status === ''} label="All" onClick={() => onStatusChange('')} />
+        <span className="w-20 text-xs font-medium uppercase tracking-wider text-gray-500">
+          Status
+        </span>
+        <Toggle
+          active={status === ""}
+          label="All"
+          onClick={() => onStatusChange("")}
+        />
         {STATUSES.map((s) => (
           <Toggle
             key={s}
@@ -48,8 +64,14 @@ export default function TicketFilters({ status, category, onStatusChange, onCate
         ))}
       </div>
       <div className="flex items-center gap-2">
-        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider w-16">Category</span>
-        <Toggle active={category === ''} label="All" onClick={() => onCategoryChange('')} />
+        <span className="w-20 text-xs font-medium uppercase tracking-wider text-gray-500">
+          Category
+        </span>
+        <Toggle
+          active={category === ""}
+          label="All"
+          onClick={() => onCategoryChange("")}
+        />
         {CATEGORIES.map((c) => (
           <Toggle
             key={c}

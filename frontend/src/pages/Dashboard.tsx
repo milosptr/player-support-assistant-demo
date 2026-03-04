@@ -1,76 +1,81 @@
-import { useEffect, useReducer, useState } from 'react';
-import type { Category, Status, TicketSummary, TicketStats } from '../types';
+import { useEffect, useRef, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import type { Category, Status } from '../types';
 import { getTickets, getStats } from '../api';
+import { ticketKeys } from '../queryKeys';
+import CategoryBadge from '../components/CategoryBadge';
+import SearchBar from '../components/SearchBar';
 import StatsBar from '../components/StatsBar';
 import TicketFilters from '../components/TicketFilters';
 import TicketTable from '../components/TicketTable';
 import Spinner from '../components/Spinner';
 
-interface FetchState {
-  tickets: TicketSummary[];
-  loading: boolean;
-  fetching: boolean;
-  error: string;
-}
-
-type FetchAction =
-  | { type: 'fetch' }
-  | { type: 'success'; tickets: TicketSummary[] }
-  | { type: 'error'; message: string };
-
-function fetchReducer(state: FetchState, action: FetchAction): FetchState {
-  switch (action.type) {
-    case 'fetch':
-      return { ...state, fetching: true };
-    case 'success':
-      return { tickets: action.tickets, loading: false, fetching: false, error: '' };
-    case 'error':
-      return { ...state, loading: false, fetching: false, error: action.message };
-    default:
-      return state;
-  }
-}
-
 export default function Dashboard() {
-  const [{ tickets, loading, fetching, error }, dispatch] = useReducer(fetchReducer, {
-    tickets: [],
-    loading: true,
-    fetching: false,
-    error: '',
-  });
-  const [stats, setStats] = useState<TicketStats | null>(null);
   const [status, setStatus] = useState<Status | ''>('');
   const [category, setCategory] = useState<Category | ''>('');
+  const [searchInput, setSearchInput] = useState('');
+  const [search, setSearch] = useState('');
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
-    const controller = new AbortController();
-    getStats()
-      .then((data) => { if (!controller.signal.aborted) setStats(data); })
-      .catch((err) => { if (!controller.signal.aborted) console.error('Failed to load stats:', err); });
-    return () => { controller.abort(); };
-  }, []);
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setSearch(searchInput), 300);
+    return () => clearTimeout(debounceRef.current);
+  }, [searchInput]);
 
-  useEffect(() => {
-    const controller = new AbortController();
-    dispatch({ type: 'fetch' });
-    const params: Record<string, string> = {};
-    if (status) params.status = status;
-    if (category) params.category = category;
-    getTickets(params)
-      .then((data) => { if (!controller.signal.aborted) dispatch({ type: 'success', tickets: data }); })
-      .catch(() => { if (!controller.signal.aborted) dispatch({ type: 'error', message: 'Unable to connect to server.' }); });
-    return () => { controller.abort(); };
-  }, [status, category]);
+  const filters: Record<string, string> = {};
+  if (status) filters.status = status;
+  if (category) filters.category = category;
+  if (search) filters.search = search;
+
+  const statsQuery = useQuery({
+    queryKey: ticketKeys.stats(),
+    queryFn: getStats,
+  });
+
+  const ticketsQuery = useQuery({
+    queryKey: ticketKeys.list(filters),
+    queryFn: () => getTickets(filters),
+  });
+
+  const stats = statsQuery.data ?? null;
+  const tickets = ticketsQuery.data ?? [];
+  const loading = ticketsQuery.isLoading;
+  const fetching = ticketsQuery.isFetching && !ticketsQuery.isLoading;
+  const error = ticketsQuery.error ? 'Unable to connect to server.' : '';
 
   return (
     <div className="flex flex-col gap-6">
-      {stats && <StatsBar stats={stats} />}
-      <TicketFilters
-        status={status}
-        category={category}
-        onStatusChange={setStatus}
-        onCategoryChange={setCategory}
-      />
+      <StatsBar stats={stats} activeStatus={status} onStatusFilter={setStatus} />
+      <div className="rounded-lg border border-gray-800/60 bg-gray-900/50">
+        <div className="p-3">
+          <SearchBar value={searchInput} onChange={setSearchInput} />
+        </div>
+        <div className="border-t border-gray-800/40">
+          <TicketFilters
+            status={status}
+            category={category}
+            onStatusChange={setStatus}
+            onCategoryChange={setCategory}
+          />
+        </div>
+        {stats && (
+          <div className="flex items-center gap-3 border-t border-gray-800/40 px-3 py-2.5">
+            {Object.entries(stats.by_category).map(([cat, count]) => (
+              <button
+                key={cat}
+                onClick={() => setCategory(category === cat ? '' : cat as Category)}
+                className={`flex items-center gap-1.5 rounded-full px-0.5 transition-colors ${
+                  category === cat ? 'ring-1 ring-teal-500/25' : ''
+                }`}
+              >
+                <CategoryBadge category={cat as Category} />
+                <span className="text-xs text-gray-500">{count}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
       {loading ? (
         <div className="flex justify-center py-12">
           <Spinner />

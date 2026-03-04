@@ -2,7 +2,7 @@ export type Category = 'bug' | 'billing' | 'gameplay' | 'abuse' | 'feedback';
 export type Status = 'open' | 'in_progress' | 'resolved';
 
 export interface TicketSummary {
-  id: number;
+  id: string;
   player_name: string;
   subject: string;
   category: Category | '';
@@ -15,6 +15,7 @@ export interface Ticket extends TicketSummary {
   ai_category: Category | '';
   ai_response: string;
   agent_response: string;
+  resolved_at: string | null;
   updated_at: string;
 }
 

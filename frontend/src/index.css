@@ -1,5 +1,92 @@
 @import "tailwindcss";
 
 body {
-  @apply bg-gray-950 text-gray-100;
+  @apply bg-gray-950 text-gray-100 antialiased;
+}
+
+.card-hover {
+  transition: transform 150ms ease-out, box-shadow 150ms ease-out;
+}
+
+.card-hover:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.row-hover {
+  border-left: 2px solid transparent;
+  transition: border-color 150ms ease-out, background-color 150ms ease-out;
+}
+
+.row-hover:hover {
+  border-left-color: rgba(20, 184, 166, 0.5);
+}
+
+.input-glow:focus {
+  border-color: rgba(20, 184, 166, 0.5);
+  box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.1);
+  outline: none;
+}
+
+.section-line {
+  height: 1px;
+  background: linear-gradient(to right, rgba(20, 184, 166, 0.4), transparent);
+}
+
+.animate-fade-in {
+  animation: fadeIn 300ms ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ai-glow {
+  animation: aiPulse 3s ease-in-out infinite;
+}
+
+@keyframes aiPulse {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(20, 184, 166, 0.05);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(20, 184, 166, 0.12);
+  }
+}
+
+.toast-in {
+  animation: toastIn 200ms ease-out;
+}
+
+.toast-out {
+  animation: toastOut 200ms ease-in forwards;
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toastOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8px);
+  }
 }

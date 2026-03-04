@@ -4,7 +4,7 @@ export default function Spinner({ size = 'md' }: { size?: 'sm' | 'md' }) {
     <div
       role="status"
       aria-label="Loading"
-      className={`${dim} animate-spin rounded-full border-2 border-gray-600 border-t-blue-500`}
+      className={`${dim} animate-spin rounded-full border-2 border-gray-600 border-t-teal-400`}
     />
   );
 }

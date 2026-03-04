@@ -28,7 +28,7 @@ export default class ErrorBoundary extends Component<Props, State> {
             <p className="mt-2 text-sm text-gray-400">An unexpected error occurred.</p>
             <a
               href="/"
-              className="mt-4 inline-block rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+              className="mt-4 inline-block rounded-lg bg-teal-500/15 px-4 py-2 text-sm font-medium text-teal-300 ring-1 ring-teal-500/30 transition-colors hover:bg-teal-500/25 hover:ring-teal-500/50"
             >
               Return to Dashboard
             </a>
