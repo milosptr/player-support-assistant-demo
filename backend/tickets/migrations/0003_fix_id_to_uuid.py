@@ -16,6 +16,10 @@ def convert_id_to_uuid(apps, schema_editor):
         schema_editor.execute("DELETE FROM tickets_ticket;")
         schema_editor.execute(
             'ALTER TABLE tickets_ticket '
+            'ALTER COLUMN id DROP IDENTITY IF EXISTS;'
+        )
+        schema_editor.execute(
+            'ALTER TABLE tickets_ticket '
             'ALTER COLUMN id DROP DEFAULT, '
             'ALTER COLUMN id SET DATA TYPE uuid USING gen_random_uuid(), '
             'ALTER COLUMN id SET DEFAULT gen_random_uuid();'
