@@ -1,11 +1,22 @@
 @import "tailwindcss";
 
+:root {
+  color-scheme: dark;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --font-sans: 'DM Sans', system-ui, sans-serif;
+}
+
 body {
   @apply bg-gray-950 text-gray-100 antialiased;
+  font-family: var(--font-sans);
+  background-image:
+    linear-gradient(rgba(20, 184, 166, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20, 184, 166, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
 }
 
 .card-hover {
-  transition: transform 150ms ease-out, box-shadow 150ms ease-out;
+  transition: transform 150ms ease-out;
 }
 
 .card-hover:hover {
@@ -15,26 +26,25 @@ body {
 
 .row-hover {
   border-left: 2px solid transparent;
-  transition: border-color 150ms ease-out, background-color 150ms ease-out;
+  transition: border-color 150ms ease-out;
 }
 
 .row-hover:hover {
   border-left-color: rgba(20, 184, 166, 0.5);
 }
 
-.input-glow:focus {
+.input-glow:focus-visible {
+  @apply ring-2 ring-teal-500/40 outline-none;
   border-color: rgba(20, 184, 166, 0.5);
-  box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.1);
-  outline: none;
 }
 
 .section-line {
   height: 1px;
-  background: linear-gradient(to right, rgba(20, 184, 166, 0.4), transparent);
+  @apply bg-gray-700/50;
 }
 
 .animate-fade-in {
-  animation: fadeIn 300ms ease-out;
+  animation: fadeIn 200ms ease-out;
 }
 
 @keyframes fadeIn {
@@ -49,16 +59,7 @@ body {
 }
 
 .ai-glow {
-  animation: aiPulse 3s ease-in-out infinite;
-}
-
-@keyframes aiPulse {
-  0%, 100% {
-    box-shadow: 0 0 10px rgba(20, 184, 166, 0.05);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(20, 184, 166, 0.12);
-  }
+  border-color: rgba(20, 184, 166, 0.2);
 }
 
 .toast-in {
@@ -88,5 +89,23 @@ body {
   to {
     opacity: 0;
     transform: translateY(8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in {
+    animation: none;
+  }
+  .toast-in {
+    animation: none;
+  }
+  .toast-out {
+    animation: none;
+  }
+  .card-hover {
+    transition: none;
+  }
+  .card-hover:hover {
+    transform: none;
   }
 }

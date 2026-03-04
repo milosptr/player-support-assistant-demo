@@ -5,7 +5,7 @@ export default function CategoryBadge({ category }: { category: Category | '' })
   if (!category) return null;
   const config = CATEGORY_CONFIG[category];
   return (
-    <span className={`inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-medium tracking-wide ${config.bg} ${config.text} ${config.ring}`}>
+    <span className={`inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-medium ${config.bg} ${config.text} ${config.ring}`}>
       {config.label}
     </span>
   );

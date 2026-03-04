@@ -11,7 +11,7 @@ export function formatRelativeTime(iso: string): string {
   const days = Math.floor(hours / 24);
   if (days < 7) return `${days}d ago`;
 
-  return new Date(iso).toLocaleDateString('en-US', {
+  return new Date(iso).toLocaleDateString(undefined, {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -19,7 +19,7 @@ export function formatRelativeTime(iso: string): string {
 }
 
 export function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString('en-US', {
+  return new Date(iso).toLocaleString(undefined, {
     month: 'short',
     day: 'numeric',
     year: 'numeric',

@@ -17,18 +17,22 @@ function Toggle({
   active,
   label,
   onClick,
+  activeClass,
 }: {
   active: boolean;
   label: string;
   onClick: () => void;
+  activeClass?: string;
 }) {
+  const activeStyle = activeClass ?? "bg-teal-500/15 text-teal-300 ring-1 ring-teal-500/30";
+
   return (
     <button
       onClick={onClick}
       aria-pressed={active}
-      className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+      className={`rounded-md px-3 py-2 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-teal-500/40 focus-visible:outline-none ${
         active
-          ? "bg-teal-500/15 text-teal-300 ring-1 ring-teal-500/30"
+          ? activeStyle
           : "bg-gray-800/80 text-gray-400 hover:bg-gray-700/80 hover:text-gray-300"
       }`}
     >
@@ -77,6 +81,7 @@ export default function TicketFilters({
             key={c}
             active={category === c}
             label={CATEGORY_CONFIG[c].label}
+            activeClass={`${CATEGORY_CONFIG[c].bg} ${CATEGORY_CONFIG[c].text} ring-1 ring-current/30`}
             onClick={() => onCategoryChange(c)}
           />
         ))}

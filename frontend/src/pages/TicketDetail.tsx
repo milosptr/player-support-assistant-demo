@@ -83,14 +83,10 @@ export default function TicketDetail() {
     return () => window.removeEventListener('beforeunload', handler);
   }, [response, ticket?.status]);
 
-  const handleResolve = () => {
-    resolveMutation.mutate();
-  };
-
   const handleTextareaKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && response.trim() && !submitting) {
       e.preventDefault();
-      handleResolve();
+      resolveMutation.mutate();
     }
   };
 
@@ -126,7 +122,7 @@ export default function TicketDetail() {
   return (
     <div className="flex flex-col gap-6">
       <Link to="/" className="-ml-2 inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium text-gray-300 transition-colors hover:bg-gray-800/60 hover:text-teal-400">
-        <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+        <svg aria-hidden="true" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
           <path fillRule="evenodd" d="M17 10a.75.75 0 0 1-.75.75H5.612l4.158 3.96a.75.75 0 1 1-1.04 1.08l-5.5-5.25a.75.75 0 0 1 0-1.08l5.5-5.25a.75.75 0 1 1 1.04 1.08L5.612 9.25H16.25A.75.75 0 0 1 17 10Z" clipRule="evenodd" />
         </svg>
         Back to Dashboard
@@ -144,94 +140,95 @@ export default function TicketDetail() {
         <span>Player: <span className="text-gray-200">{ticket.player_name}</span></span>
         <span className="text-gray-600">&middot;</span>
         <span>Created: {formatDateTime(ticket.created_at)}</span>
-        {ticket.resolved_at && (
+        {ticket.resolved_at ? (
           <>
             <span className="text-gray-600">&middot;</span>
             <span>Resolved {formatRelativeTime(ticket.resolved_at)}</span>
           </>
-        )}
+        ) : null}
       </div>
 
-      <section className="rounded-lg border border-gray-800/60 bg-gray-900/50 p-5">
+      <section className="rounded-lg border border-gray-800/60 border-l-2 border-l-gray-600/50 bg-gray-900/50 p-5">
         <div className="mb-3 flex items-center gap-3">
-          <h2 className="text-xs font-medium uppercase tracking-wider text-gray-500">Player Message</h2>
+          <h2 className="font-mono text-xs font-medium uppercase tracking-wider text-gray-500">Player Message</h2>
           <div className="section-line flex-1" />
         </div>
         <p className="whitespace-pre-wrap text-sm leading-relaxed text-gray-300">{ticket.message}</p>
       </section>
 
-      {(ticket.ai_category || ticket.ai_response) && (
-        <section className="ai-glow rounded-lg border border-teal-500/20 bg-teal-500/5 p-5">
+      {ticket.ai_category || ticket.ai_response ? (
+        <section className="ai-glow rounded-lg border border-teal-500/20 border-l-2 border-l-teal-500/40 bg-teal-500/5 p-5">
           <div className="mb-3 flex items-center gap-3">
-            <svg className="h-4 w-4 text-teal-400" viewBox="0 0 24 24" fill="currentColor">
+            <svg aria-hidden="true" className="h-4 w-4 text-teal-400" viewBox="0 0 24 24" fill="currentColor">
               <path d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 0 0-2.455 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
             </svg>
-            <h2 className="text-xs font-medium uppercase tracking-wider text-teal-400">AI Suggestion</h2>
+            <h2 className="font-mono text-xs font-medium uppercase tracking-wider text-teal-400">AI Suggestion</h2>
             <div className="section-line flex-1" />
-            {!isResolved && (
+            {!isResolved ? (
               <button
                 onClick={() => regenerateMutation.mutate()}
                 disabled={regenerating}
                 className="flex items-center gap-1.5 rounded-md bg-teal-500/10 px-2.5 py-1 text-xs font-medium text-teal-400 ring-1 ring-teal-500/25 transition-colors hover:bg-teal-500/20 hover:ring-teal-500/40 disabled:opacity-50"
               >
                 {regenerating ? <Spinner size="sm" /> : (
-                  <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg aria-hidden="true" className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M1 4v6h6M23 20v-6h-6" strokeLinecap="round" strokeLinejoin="round" />
                     <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 )}
                 Regenerate
               </button>
-            )}
+            ) : null}
           </div>
-          {ticket.ai_category && (
+          {ticket.ai_category ? (
             <div className="mb-3 flex items-center gap-2">
               <span className="text-sm text-gray-400">Category:</span>
               <CategoryBadge category={ticket.ai_category} />
             </div>
-          )}
-          {ticket.ai_response && (
+          ) : null}
+          {ticket.ai_response ? (
             <p className="whitespace-pre-wrap text-sm leading-relaxed text-gray-300">{ticket.ai_response}</p>
-          )}
+          ) : null}
         </section>
-      )}
+      ) : null}
 
-      <section className="rounded-lg border border-gray-800/60 bg-gray-900/50 p-5">
+      <section className="rounded-lg border border-gray-800/60 border-l-2 border-l-violet-500/40 bg-gray-900/50 p-5">
         <div className="mb-3 flex items-center gap-3">
-          <h2 className="text-xs font-medium uppercase tracking-wider text-gray-500">Agent Response</h2>
+          <h2 className="font-mono text-xs font-medium uppercase tracking-wider text-gray-500">Agent Response</h2>
           <div className="section-line flex-1" />
         </div>
         {isResolved ? (
           <p className="whitespace-pre-wrap text-sm leading-relaxed text-gray-300">{ticket.agent_response}</p>
         ) : (
           <>
-            {ticket.ai_response && (
+            {ticket.ai_response ? (
               <button
                 onClick={() => { setResponse(ticket.ai_response); cleanResponse.current = ticket.ai_response; }}
                 className="mb-2 inline-flex items-center gap-1 text-xs font-medium text-teal-400 transition-colors hover:text-teal-300"
               >
-                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+                <svg aria-hidden="true" className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 0 0-2.455 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
                 </svg>
                 Use AI suggestion
               </button>
-            )}
+            ) : null}
             <textarea
               ref={textareaRef}
               value={response}
               onChange={(e) => setResponse(e.target.value)}
               onKeyDown={handleTextareaKeyDown}
+              aria-label="Agent response"
               placeholder="Write your response to the player..."
               className="input-glow min-h-[120px] w-full resize-none overflow-hidden rounded-lg border border-gray-700 bg-gray-800/80 px-4 py-3 text-sm text-gray-100 placeholder-gray-500"
             />
-            <p className="mt-1.5 text-xs text-gray-600">&#8984;+Enter to submit</p>
+            <p className="mt-1.5 text-xs text-gray-500">&#8984;+Enter to submit</p>
           </>
         )}
       </section>
 
-      {!isResolved && (
+      {!isResolved ? (
         <div className="flex items-center gap-3">
-          {isOpen && (
+          {isOpen ? (
             <button
               onClick={() => inProgressMutation.mutate()}
               disabled={submitting}
@@ -239,7 +236,7 @@ export default function TicketDetail() {
             >
               Mark In Progress
             </button>
-          )}
+          ) : null}
           {confirming ? (
             <div className="flex items-center gap-3 rounded-lg bg-gray-800/60 px-4 py-2 ring-1 ring-gray-700">
               <span className="text-sm text-gray-300">Resolve this ticket?</span>
@@ -250,7 +247,7 @@ export default function TicketDetail() {
                 Cancel
               </button>
               <button
-                onClick={handleResolve}
+                onClick={() => resolveMutation.mutate()}
                 disabled={submitting}
                 className="rounded-md bg-teal-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-teal-500 disabled:opacity-50"
               >
@@ -266,9 +263,9 @@ export default function TicketDetail() {
               Send &amp; Resolve
             </button>
           )}
-          {submitting && <Spinner size="sm" />}
+          {submitting ? <Spinner size="sm" /> : null}
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

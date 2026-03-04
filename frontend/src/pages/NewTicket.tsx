@@ -63,7 +63,7 @@ export default function NewTicket() {
 
       {createMutation.isPending ? (
         <div className="rounded-lg border border-gray-800/60 bg-gray-900/50 p-6">
-          <div className="flex flex-col items-center gap-4 py-10">
+          <div className="flex flex-col items-center gap-4 py-10" aria-live="polite">
             <Spinner />
             <p className="text-sm text-gray-400">Analyzing ticket...</p>
           </div>
@@ -75,6 +75,8 @@ export default function NewTicket() {
               <label htmlFor="player-name" className="mb-1.5 block text-sm font-medium text-gray-300">Player Name</label>
               <input
                 id="player-name"
+                name="player_name"
+                autoComplete="off"
                 type="text"
                 value={playerName}
                 onChange={(e) => setPlayerName(e.target.value)}
@@ -86,6 +88,8 @@ export default function NewTicket() {
               <label htmlFor="subject" className="mb-1.5 block text-sm font-medium text-gray-300">Subject</label>
               <input
                 id="subject"
+                name="subject"
+                autoComplete="off"
                 type="text"
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
@@ -97,6 +101,8 @@ export default function NewTicket() {
               <label htmlFor="message" className="mb-1.5 block text-sm font-medium text-gray-300">Message</label>
               <textarea
                 id="message"
+                name="message"
+                autoComplete="off"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyDown={(e) => {
@@ -109,14 +115,14 @@ export default function NewTicket() {
                 placeholder="Describe the issue in detail..."
                 className={inputClass}
               />
-              <p className="mt-1.5 text-xs text-gray-600">&#8984;+Enter to submit</p>
+              <p className="mt-1.5 text-xs text-gray-500">&#8984;+Enter to submit</p>
             </div>
 
-            {error && <p className="text-sm text-red-400">{error}</p>}
+            {error ? <p id="form-error" role="alert" className="text-sm text-red-400">{error}</p> : null}
 
             <button
               type="submit"
-              className="w-fit rounded-lg bg-teal-500/15 px-5 py-2.5 text-sm font-medium text-teal-300 ring-1 ring-teal-500/30 transition-colors hover:bg-teal-500/25 hover:ring-teal-500/50"
+              className="w-fit rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-teal-500"
             >
               Submit Ticket
             </button>
