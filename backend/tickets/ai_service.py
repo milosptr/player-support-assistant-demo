@@ -6,8 +6,8 @@ import requests
 
 logger = logging.getLogger(__name__)
 
-OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
-MODEL = "openrouter/free"
+GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+MODEL = "gemini-2.5-flash"
 
 VALID_CATEGORIES = {"bug", "billing", "gameplay", "abuse", "feedback"}
 
@@ -51,14 +51,14 @@ def analyze_ticket(subject, message):
     Send ticket to AI for categorization and response suggestion.
     Returns {"category": "...", "response": "..."} or empty dict on failure.
     """
-    api_key = os.environ.get("OPENROUTER_API_KEY")
+    api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
-        logger.warning("OPENROUTER_API_KEY not set, skipping AI analysis")
+        logger.warning("GEMINI_API_KEY not set, skipping AI analysis")
         return {}
 
     try:
         response = requests.post(
-            OPENROUTER_API_URL,
+            GEMINI_API_URL,
             headers={
                 "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json",
