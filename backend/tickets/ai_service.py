@@ -7,7 +7,7 @@ import requests
 logger = logging.getLogger(__name__)
 
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
-MODEL = "google/gemini-2.0-flash-001"
+MODEL = "openrouter/free"
 
 VALID_CATEGORIES = {"bug", "billing", "gameplay", "abuse", "feedback"}
 
