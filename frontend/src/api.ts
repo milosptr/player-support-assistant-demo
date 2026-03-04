@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { Ticket, TicketSummary, TicketStats, CreateTicketData } from './types';
+import type { Ticket, TicketSummary, TicketStats, CreateTicketData, ChatRequest, ChatResponse } from './types';
 
 const api = axios.create({
   baseURL: '/api',
@@ -29,3 +29,6 @@ export const regenerateAI = (id: string) =>
 
 export const getStats = () =>
   api.get<TicketStats>('/tickets/stats/').then((r) => r.data);
+
+export const sendChatMessage = (data: ChatRequest) =>
+  api.post<ChatResponse>('/tickets/chat/', data, { timeout: 60_000 }).then((r) => r.data);

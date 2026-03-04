@@ -1,3 +1,4 @@
+import json
 from io import StringIO
 from unittest.mock import MagicMock, patch
 
@@ -200,7 +201,7 @@ class AIServiceTest(TestCase):
         return mock_resp
 
     @patch('tickets.ai_service.requests.post')
-    @patch.dict('os.environ', {'OPENROUTER_API_KEY': 'test-key'})
+    @patch.dict('os.environ', {'GEMINI_API_KEY': 'test-key'})
     def test_create_ticket_with_ai_success(self, mock_post):
         mock_post.return_value = self._mock_openrouter_response(
             '{"category": "bug", "response": "I\'ve logged this docking issue."}'
@@ -212,7 +213,7 @@ class AIServiceTest(TestCase):
         self.assertEqual(response.data['category'], 'bug')
 
     @patch('tickets.ai_service.requests.post')
-    @patch.dict('os.environ', {'OPENROUTER_API_KEY': 'test-key'})
+    @patch.dict('os.environ', {'GEMINI_API_KEY': 'test-key'})
     def test_create_ticket_ai_failure_still_creates(self, mock_post):
         from requests.exceptions import RequestException
         mock_post.side_effect = RequestException("Connection error")
@@ -230,7 +231,7 @@ class AIServiceTest(TestCase):
         mock_post.assert_not_called()
 
     @patch('tickets.ai_service.requests.post')
-    @patch.dict('os.environ', {'OPENROUTER_API_KEY': 'test-key'})
+    @patch.dict('os.environ', {'GEMINI_API_KEY': 'test-key'})
     def test_create_ticket_ai_invalid_category(self, mock_post):
         mock_post.return_value = self._mock_openrouter_response(
             '{"category": "invalid_cat", "response": "Some response"}'
@@ -241,7 +242,7 @@ class AIServiceTest(TestCase):
         self.assertEqual(response.data['ai_response'], '')
 
     @patch('tickets.ai_service.requests.post')
-    @patch.dict('os.environ', {'OPENROUTER_API_KEY': 'test-key'})
+    @patch.dict('os.environ', {'GEMINI_API_KEY': 'test-key'})
     def test_regenerate_on_resolved_returns_400(self, mock_post):
         ticket = Ticket.objects.create(
             player_name='TestPilot', subject='Ship stuck', message='My ship is stuck.',
@@ -253,7 +254,7 @@ class AIServiceTest(TestCase):
         mock_post.assert_not_called()
 
     @patch('tickets.ai_service.requests.post')
-    @patch.dict('os.environ', {'OPENROUTER_API_KEY': 'test-key'})
+    @patch.dict('os.environ', {'GEMINI_API_KEY': 'test-key'})
     def test_regenerate_ai_response(self, mock_post):
         ticket = Ticket.objects.create(
             player_name='TestPilot', subject='Ship stuck', message='My ship is stuck in warp.',
@@ -270,7 +271,7 @@ class AIServiceTest(TestCase):
         self.assertEqual(response.data['ai_category'], 'bug')
 
     @patch('tickets.ai_service.requests.post')
-    @patch.dict('os.environ', {'OPENROUTER_API_KEY': 'test-key'})
+    @patch.dict('os.environ', {'GEMINI_API_KEY': 'test-key'})
     def test_regenerate_ai_failure_returns_502(self, mock_post):
         from requests.exceptions import RequestException
         ticket = Ticket.objects.create(
@@ -285,7 +286,7 @@ class AIServiceTest(TestCase):
         self.assertEqual(ticket.ai_response, 'Original response.')
 
     @patch('tickets.ai_service.requests.post')
-    @patch.dict('os.environ', {'OPENROUTER_API_KEY': 'test-key'})
+    @patch.dict('os.environ', {'GEMINI_API_KEY': 'test-key'})
     def test_create_ticket_ai_markdown_wrapped_json(self, mock_post):
         mock_post.return_value = self._mock_openrouter_response(
             '```json\n{"category": "gameplay", "response": "Try adjusting your extractors."}\n```'
@@ -294,3 +295,124 @@ class AIServiceTest(TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data['ai_category'], 'gameplay')
         self.assertEqual(response.data['ai_response'], 'Try adjusting your extractors.')
+
+
+class ChatAPITest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.ticket = Ticket.objects.create(
+            player_name='TestPilot',
+            subject='Ship stuck in warp',
+            message='My ship is stuck in a warp tunnel.',
+            category='bug',
+            status='open',
+        )
+
+    def _mock_chat_response(self, content, tool_calls=None):
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        msg = {"content": content}
+        if tool_calls:
+            msg["tool_calls"] = tool_calls
+        mock_resp.json.return_value = {"choices": [{"message": msg}]}
+        return mock_resp
+
+    @patch('tickets.chat_service.requests.post')
+    @patch.dict('os.environ', {'GEMINI_API_KEY': 'test-key'})
+    def test_chat_basic_text_response(self, mock_post):
+        mock_post.return_value = self._mock_chat_response("Here's some help.")
+        response = self.client.post('/api/tickets/chat/', {
+            'messages': [{'role': 'user', 'content': 'Hello'}],
+        }, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['message'], "Here's some help.")
+        self.assertEqual(response.data['proposed_actions'], [])
+
+    @patch('tickets.chat_service.requests.post')
+    @patch.dict('os.environ', {'GEMINI_API_KEY': 'test-key'})
+    def test_chat_search_tool_executes(self, mock_post):
+        # First call: LLM invokes search_tickets tool
+        search_response = MagicMock()
+        search_response.status_code = 200
+        search_response.json.return_value = {"choices": [{"message": {
+            "content": None,
+            "tool_calls": [{
+                "id": "call_1",
+                "function": {
+                    "name": "search_tickets",
+                    "arguments": json.dumps({"status": "open"}),
+                },
+            }],
+        }}]}
+        # Second call: LLM returns final text
+        final_response = self._mock_chat_response("Found 1 open ticket.")
+        mock_post.side_effect = [search_response, final_response]
+
+        response = self.client.post('/api/tickets/chat/', {
+            'messages': [{'role': 'user', 'content': 'Show me open tickets'}],
+        }, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['message'], 'Found 1 open ticket.')
+        self.assertEqual(mock_post.call_count, 2)
+
+    @patch('tickets.chat_service.requests.post')
+    @patch.dict('os.environ', {'GEMINI_API_KEY': 'test-key'})
+    def test_chat_write_tool_returns_proposal(self, mock_post):
+        # LLM calls update_ticket_status, then returns summary
+        write_response = MagicMock()
+        write_response.status_code = 200
+        write_response.json.return_value = {"choices": [{"message": {
+            "content": None,
+            "tool_calls": [{
+                "id": "call_1",
+                "function": {
+                    "name": "update_ticket_status",
+                    "arguments": json.dumps({
+                        "id": str(self.ticket.id),
+                        "status": "in_progress",
+                    }),
+                },
+            }],
+        }}]}
+        final_response = self._mock_chat_response(
+            "I'll mark that ticket as in progress for you."
+        )
+        mock_post.side_effect = [write_response, final_response]
+
+        response = self.client.post('/api/tickets/chat/', {
+            'messages': [{'role': 'user', 'content': 'Mark this in progress'}],
+            'current_ticket_id': str(self.ticket.id),
+        }, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['proposed_actions']), 1)
+        self.assertEqual(
+            response.data['proposed_actions'][0]['type'], 'update_ticket_status'
+        )
+        # Ticket should NOT have been modified
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.status, 'open')
+
+    @patch.dict('os.environ', {}, clear=True)
+    def test_chat_no_api_key(self):
+        response = self.client.post('/api/tickets/chat/', {
+            'messages': [{'role': 'user', 'content': 'Hello'}],
+        }, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('unavailable', response.data['message'])
+
+    def test_chat_empty_messages_rejected(self):
+        response = self.client.post('/api/tickets/chat/', {
+            'messages': [],
+        }, format='json')
+        self.assertEqual(response.status_code, 400)
+
+    @patch('tickets.chat_service.requests.post')
+    @patch.dict('os.environ', {'GEMINI_API_KEY': 'test-key'})
+    def test_chat_timeout_returns_error(self, mock_post):
+        from requests.exceptions import Timeout
+        mock_post.side_effect = Timeout("Connection timed out")
+        response = self.client.post('/api/tickets/chat/', {
+            'messages': [{'role': 'user', 'content': 'Hello'}],
+        }, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('timed out', response.data['message'])

@@ -92,6 +92,21 @@ body {
   }
 }
 
+.chat-slide-up {
+  animation: chatSlideUp 200ms ease-out;
+}
+
+@keyframes chatSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in {
     animation: none;
@@ -100,6 +115,9 @@ body {
     animation: none;
   }
   .toast-out {
+    animation: none;
+  }
+  .chat-slide-up {
     animation: none;
   }
   .card-hover {

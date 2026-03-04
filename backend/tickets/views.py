@@ -5,8 +5,10 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from .ai_service import analyze_ticket
+from .chat_service import run_chat
 from .models import Ticket
 from .serializers import (
+    ChatRequestSerializer,
     TicketCreateSerializer,
     TicketDetailSerializer,
     TicketListSerializer,
@@ -109,6 +111,18 @@ class TicketViewSet(viewsets.ModelViewSet):
         ticket.ai_response = result["response"]
         ticket.save(update_fields=["ai_response"])
         return Response(TicketDetailSerializer(ticket).data)
+
+    @action(detail=False, methods=['post'], url_path='chat')
+    def chat(self, request):
+        serializer = ChatRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        messages = serializer.validated_data['messages']
+        current_ticket_id = serializer.validated_data.get('current_ticket_id')
+        result = run_chat(
+            [{"role": m["role"], "content": m["content"]} for m in messages],
+            current_ticket_id=str(current_ticket_id) if current_ticket_id else None,
+        )
+        return Response(result)
 
     @action(detail=True, methods=['post'], url_path='in-progress')
     def mark_in_progress(self, request, pk=None):

@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import Spinner from './components/Spinner';
 import ErrorBoundary from './components/ErrorBoundary';
+import ChatWidget from './components/ChatWidget';
 
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const TicketDetail = lazy(() => import('./pages/TicketDetail'));
@@ -26,6 +27,7 @@ export default function App() {
           <Route path="/tickets/:id" element={<Suspense fallback={<PageLoader />}><TicketDetail /></Suspense>} />
         </Route>
       </Routes>
+      <ChatWidget />
     </ErrorBoundary>
   );
 }

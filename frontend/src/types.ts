@@ -32,3 +32,35 @@ export interface CreateTicketData {
   subject: string;
   message: string;
 }
+
+export type ChatRole = 'user' | 'assistant';
+
+export type ActionType =
+  | 'update_ticket_status'
+  | 'update_ticket_category'
+  | 'resolve_ticket';
+
+export type ActionStatus = 'pending' | 'confirmed' | 'cancelled' | 'failed';
+
+export interface ProposedAction {
+  type: ActionType;
+  args: Record<string, string>;
+  status?: ActionStatus;
+}
+
+export interface ChatMessage {
+  id: string;
+  role: ChatRole;
+  content: string;
+  proposed_actions?: ProposedAction[];
+}
+
+export interface ChatRequest {
+  messages: { role: ChatRole; content: string }[];
+  current_ticket_id?: string;
+}
+
+export interface ChatResponse {
+  message: string;
+  proposed_actions: ProposedAction[];
+}
