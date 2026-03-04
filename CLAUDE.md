@@ -53,7 +53,7 @@ This project is built in 6 sequential phases. See @phases/README.md for overview
 - @phases/phase-5-production-wiring.md — Django serves React, multi-stage Docker
 - @phases/phase-6-cicd-deployment.md — CI/CD, Render.com, README
 
-**Current phase: 2 (Backend Core)** — Phase 1 is complete and committed.
+**Current phase: 4 (Frontend)** — Phases 1–4 are complete and ready to commit.
 
 IMPORTANT: Always check which phase we're on before making changes. Don't pull in work from later phases.
 
@@ -77,6 +77,7 @@ IMPORTANT: Always check which phase we're on before making changes. Don't pull i
 
 - Python: flake8, max line length 120, Django conventions
 - TypeScript: strict mode, ESLint with React + TS plugins
+- ESLint has a strict `react-hooks/set-state-in-effect` rule — no `setState` calls directly in effect bodies. Use `useReducer` with `dispatch` as a workaround.
 - No component libraries — Tailwind utility classes only
 - No state management libraries — React state + useEffect
 - Dark theme: gray-950 backgrounds, gray-800 borders, color only on badges/buttons
