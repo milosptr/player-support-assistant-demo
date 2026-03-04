@@ -4,7 +4,7 @@ A game support tool that uses AI to automatically categorize player tickets
 and suggest responses. Built as a demonstration of full-stack development,
 DevOps practices, and AI integration.
 
-**[Live Demo](https://psa-xxxx.onrender.com)**
+**[Live Demo](https://psa-5a24.onrender.com)**
 > First load may take ~30 seconds if the service is cold (free tier).
 
 ## What It Does
