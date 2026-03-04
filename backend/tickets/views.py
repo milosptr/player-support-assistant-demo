@@ -3,6 +3,7 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from .ai_service import analyze_ticket
 from .models import Ticket
 from .serializers import (
     TicketCreateSerializer,
@@ -34,7 +35,12 @@ class TicketViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         ticket = serializer.save()
-        # Phase 3 will hook AI analysis here
+        result = analyze_ticket(ticket.subject, ticket.message)
+        if result:
+            ticket.ai_category = result["category"]
+            ticket.ai_response = result["response"]
+            ticket.category = result["category"]
+            ticket.save(update_fields=["ai_category", "ai_response", "category"])
         detail = TicketDetailSerializer(ticket)
         return Response(detail.data, status=status.HTTP_201_CREATED)
 

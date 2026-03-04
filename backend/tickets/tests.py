@@ -1,4 +1,5 @@
 from io import StringIO
+from unittest.mock import MagicMock, patch
 
 from django.core.management import call_command
 from django.test import TestCase
@@ -133,3 +134,73 @@ class SeedCommandTest(TestCase):
         call_command('seed_tickets', stdout=StringIO())
         call_command('seed_tickets', stdout=StringIO())
         self.assertEqual(Ticket.objects.count(), 12)
+
+
+class AIServiceTest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.ticket_data = {
+            'player_name': 'NovaPilot',
+            'subject': 'Lost my ship in docking',
+            'message': 'I was docking at Jita 4-4 and my Tengu just vanished from the hangar.',
+        }
+
+    def _mock_openrouter_response(self, content):
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = {
+            "choices": [{"message": {"content": content}}]
+        }
+        return mock_resp
+
+    @patch('tickets.ai_service.requests.post')
+    @patch.dict('os.environ', {'OPENROUTER_API_KEY': 'test-key'})
+    def test_create_ticket_with_ai_success(self, mock_post):
+        mock_post.return_value = self._mock_openrouter_response(
+            '{"category": "bug", "response": "I\'ve logged this docking issue."}'
+        )
+        response = self.client.post('/api/tickets/', self.ticket_data, format='json')
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data['ai_category'], 'bug')
+        self.assertEqual(response.data['ai_response'], "I've logged this docking issue.")
+        self.assertEqual(response.data['category'], 'bug')
+
+    @patch('tickets.ai_service.requests.post')
+    @patch.dict('os.environ', {'OPENROUTER_API_KEY': 'test-key'})
+    def test_create_ticket_ai_failure_still_creates(self, mock_post):
+        from requests.exceptions import RequestException
+        mock_post.side_effect = RequestException("Connection error")
+        response = self.client.post('/api/tickets/', self.ticket_data, format='json')
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data['ai_category'], '')
+        self.assertEqual(response.data['ai_response'], '')
+
+    @patch('tickets.ai_service.requests.post')
+    @patch('tickets.ai_service.os.environ.get', return_value=None)
+    def test_create_ticket_no_api_key(self, mock_env_get, mock_post):
+        response = self.client.post('/api/tickets/', self.ticket_data, format='json')
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data['ai_category'], '')
+        mock_post.assert_not_called()
+
+    @patch('tickets.ai_service.requests.post')
+    @patch.dict('os.environ', {'OPENROUTER_API_KEY': 'test-key'})
+    def test_create_ticket_ai_invalid_category(self, mock_post):
+        mock_post.return_value = self._mock_openrouter_response(
+            '{"category": "invalid_cat", "response": "Some response"}'
+        )
+        response = self.client.post('/api/tickets/', self.ticket_data, format='json')
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data['ai_category'], '')
+        self.assertEqual(response.data['ai_response'], '')
+
+    @patch('tickets.ai_service.requests.post')
+    @patch.dict('os.environ', {'OPENROUTER_API_KEY': 'test-key'})
+    def test_create_ticket_ai_markdown_wrapped_json(self, mock_post):
+        mock_post.return_value = self._mock_openrouter_response(
+            '```json\n{"category": "gameplay", "response": "Try adjusting your extractors."}\n```'
+        )
+        response = self.client.post('/api/tickets/', self.ticket_data, format='json')
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data['ai_category'], 'gameplay')
+        self.assertEqual(response.data['ai_response'], 'Try adjusting your extractors.')
