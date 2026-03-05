@@ -1,8 +1,10 @@
 # Player Support Assistant
 
+Built as a showcase project for a CCP Games Tools Programmer application.
+
 A game support tool that uses AI to automatically categorize player tickets,
 suggest responses, and provide an interactive chat assistant for support agents.
-Built as a demonstration of full-stack development, DevOps practices, and AI integration.
+Demonstrates full-stack development, DevOps practices, and AI integration.
 
 **[Live Demo](https://psa-5a24.onrender.com)**
 > First load may take ~30 seconds if the service is cold (free tier).
@@ -35,6 +37,20 @@ A floating chat widget (bottom-right corner) gives agents an interactive AI assi
 - **Propose actions** like changing ticket status, updating categories, or resolving tickets with a response
 
 The assistant uses **tool-calling** — it decides which tools to invoke based on the conversation, executes read operations (search, lookup) server-side, and returns write operations (status changes, resolves) as proposals that require agent confirmation before executing. The chat is context-aware: when viewing a specific ticket, the assistant automatically has that ticket's details.
+
+## Screenshots
+
+### Dashboard
+![Dashboard with ticket list, stats bar, and category filters](docs/dashboard.png)
+
+### AI Chat Assistant — Ticket Lookup
+![AI assistant searching for a ticket and showing details](docs/dashboard-with-ai.png)
+
+### AI Chat Assistant — Action Confirmation
+![AI assistant proposing a status change with confirm/cancel buttons](docs/ticket-confirmation-ai.png)
+
+### AI Chat Assistant — Action Confirmed
+![Ticket status updated to In Progress after agent confirmation](docs/ticket-confirmed-ai.png)
 
 ## Tech Stack
 
