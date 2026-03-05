@@ -56,7 +56,7 @@ The assistant uses **tool-calling** — it decides which tools to invoke based o
 
 - **Backend:** Django REST Framework + PostgreSQL
 - **Frontend:** React + Vite + Tailwind CSS
-- **AI:** Google Gemini 2.5 Flash (via OpenAI-compatible API)
+- **AI:** Google Gemini 2.5 Flash
 - **DevOps:** Docker, GitHub Actions CI/CD, deployed to Render.com
 
 ## Run Locally
@@ -75,11 +75,13 @@ Visit http://localhost:8000 — the dashboard loads with pre-seeded tickets.
 
 ### Without Docker
 
+Requires Python 3.12+ and Node 20+.
+
 ```bash
-# Backend
-cd backend
+# Backend (uses SQLite by default — no Postgres needed locally)
 python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r backend/requirements.txt
+cd backend
 python manage.py migrate
 python manage.py seed_tickets
 python manage.py runserver
