@@ -33,6 +33,12 @@ class ChatMessageSerializer(serializers.Serializer):
 class ChatRequestSerializer(serializers.Serializer):
     messages = ChatMessageSerializer(many=True)
     current_ticket_id = serializers.UUIDField(required=False, allow_null=True)
+    conversation_history = serializers.ListField(
+        child=serializers.DictField(),
+        required=False,
+        allow_empty=True,
+        default=None,
+    )
 
     def validate_messages(self, value):
         if not value:

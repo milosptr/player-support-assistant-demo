@@ -15,6 +15,7 @@ function genId() {
 export default function ChatWidget() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [conversationHistory, setConversationHistory] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(false);
   const location = useLocation();
   const queryClient = useQueryClient();
@@ -33,7 +34,12 @@ export default function ChatWidget() {
       const response = await sendChatMessage({
         messages: apiMessages,
         current_ticket_id: currentTicketId ?? undefined,
+        conversation_history: conversationHistory.length > 0 ? conversationHistory : undefined,
       });
+
+      if (response.conversation_history) {
+        setConversationHistory(response.conversation_history);
+      }
 
       const assistantMsg: ChatMessage = {
         id: genId(),

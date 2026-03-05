@@ -229,22 +229,27 @@ def _call_gemini(messages, api_key):
     return response.json()["choices"][0]["message"]
 
 
-def run_chat(messages, current_ticket_id=None):
+def run_chat(messages, current_ticket_id=None, conversation_history=None):
     """
     Run the agentic chat loop.
-    Returns {"message": str, "proposed_actions": list}
+    Returns {"message": str, "proposed_actions": list, "conversation_history": list}
     """
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
         return {
             "message": "AI assistant is unavailable — no Gemini API key configured.",
             "proposed_actions": [],
+            "conversation_history": [],
         }
 
     system_content = SYSTEM_PROMPT + _get_current_ticket_context(current_ticket_id)
     api_messages = [{"role": "system", "content": system_content}]
-    for msg in messages:
-        api_messages.append({"role": msg["role"], "content": msg["content"]})
+
+    if conversation_history:
+        api_messages.extend(conversation_history)
+    else:
+        for msg in messages:
+            api_messages.append({"role": msg["role"], "content": msg["content"]})
 
     proposed_actions = []
     start_time = time.time()
@@ -255,15 +260,18 @@ def run_chat(messages, current_ticket_id=None):
                 return {
                     "message": "I took too long processing that request. Could you try again?",
                     "proposed_actions": [],
+                    "conversation_history": api_messages[1:],
                 }
 
             result = _call_gemini(api_messages, api_key)
 
             tool_calls = result.get("tool_calls")
             if not tool_calls:
+                api_messages.append(result)
                 return {
                     "message": result.get("content", ""),
                     "proposed_actions": proposed_actions,
+                    "conversation_history": api_messages[1:],
                 }
 
             api_messages.append(result)
@@ -313,22 +321,26 @@ def run_chat(messages, current_ticket_id=None):
         return {
             "message": "I needed too many steps to process that request. Could you try a simpler question?",
             "proposed_actions": proposed_actions,
+            "conversation_history": api_messages[1:],
         }
 
     except requests.Timeout:
         return {
             "message": "The AI service timed out. Please try again.",
             "proposed_actions": [],
+            "conversation_history": api_messages[1:],
         }
     except requests.RequestException as e:
         logger.error("Chat API call failed: %s", e)
         return {
             "message": "The AI service is temporarily unavailable. Please try again later.",
             "proposed_actions": [],
+            "conversation_history": api_messages[1:],
         }
     except (KeyError, json.JSONDecodeError) as e:
         logger.error("Chat response parsing failed: %s", e)
         return {
             "message": "I received an unexpected response. Please try again.",
             "proposed_actions": [],
+            "conversation_history": api_messages[1:],
         }

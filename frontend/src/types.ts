@@ -58,9 +58,11 @@ export interface ChatMessage {
 export interface ChatRequest {
   messages: { role: ChatRole; content: string }[];
   current_ticket_id?: string;
+  conversation_history?: unknown[];
 }
 
 export interface ChatResponse {
   message: string;
   proposed_actions: ProposedAction[];
+  conversation_history?: unknown[];
 }

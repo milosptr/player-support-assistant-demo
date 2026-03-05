@@ -118,9 +118,11 @@ class TicketViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         messages = serializer.validated_data['messages']
         current_ticket_id = serializer.validated_data.get('current_ticket_id')
+        conversation_history = serializer.validated_data.get('conversation_history')
         result = run_chat(
             [{"role": m["role"], "content": m["content"]} for m in messages],
             current_ticket_id=str(current_ticket_id) if current_ticket_id else None,
+            conversation_history=conversation_history,
         )
         return Response(result)
 
