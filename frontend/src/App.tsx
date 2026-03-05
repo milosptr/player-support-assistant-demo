@@ -7,7 +7,6 @@ import ChatWidget from './components/ChatWidget';
 
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const TicketDetail = lazy(() => import('./pages/TicketDetail'));
-const NewTicket = lazy(() => import('./pages/NewTicket'));
 
 function PageLoader() {
   return (
@@ -23,7 +22,6 @@ export default function App() {
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Suspense fallback={<PageLoader />}><Dashboard /></Suspense>} />
-          <Route path="/tickets/new" element={<Suspense fallback={<PageLoader />}><NewTicket /></Suspense>} />
           <Route path="/tickets/:id" element={<Suspense fallback={<PageLoader />}><TicketDetail /></Suspense>} />
         </Route>
       </Routes>

@@ -6,6 +6,7 @@ import { getTickets, getStats } from '../api';
 import { ticketKeys } from '../queryKeys';
 import { CATEGORIES, STATUSES } from '../utils/constants';
 import CategoryBadge from '../components/CategoryBadge';
+import NewTicketModal from '../components/NewTicketModal';
 import SearchBar from '../components/SearchBar';
 import StatsBar from '../components/StatsBar';
 import TicketFilters from '../components/TicketFilters';
@@ -21,6 +22,7 @@ export default function Dashboard() {
   const status = (VALID_STATUSES.has(searchParams.get('status') ?? '') ? searchParams.get('status') : '') as Status | '';
   const category = (VALID_CATEGORIES.has(searchParams.get('category') ?? '') ? searchParams.get('category') : '') as Category | '';
   const searchParam = searchParams.get('search') ?? '';
+  const modalOpen = searchParams.has('new');
 
   const [searchInput, setSearchInput] = useState(searchParam);
   const [search, setSearch] = useState(searchParam);
@@ -53,6 +55,14 @@ export default function Dashboard() {
 
   const setStatus = (s: Status | '') => setParam('status', s);
   const setCategory = (c: Category | '') => setParam('category', c);
+
+  const closeModal = () => {
+    setSearchParams(prev => {
+      const params = new URLSearchParams(prev);
+      params.delete('new');
+      return params;
+    }, { replace: true });
+  };
 
   const filters: Record<string, string> = {};
   if (status) filters.status = status;
@@ -123,6 +133,7 @@ export default function Dashboard() {
           <TicketTable tickets={tickets} />
         </div>
       )}
+      <NewTicketModal key={String(modalOpen)} open={modalOpen} onClose={closeModal} />
     </div>
   );
 }

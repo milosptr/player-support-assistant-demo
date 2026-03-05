@@ -1,13 +1,14 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
 
 export default function Layout() {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
+  const hasNewParam = new URLSearchParams(search).has('new');
 
-  const navLink = (to: string, label: string) => (
+  const navLink = (to: string, label: string, active?: boolean) => (
     <Link
       to={to}
       className={`text-sm font-medium transition-colors ${
-        pathname === to ? 'text-teal-400' : 'text-gray-400 hover:text-gray-200'
+        (active ?? pathname === to) ? 'text-teal-400' : 'text-gray-400 hover:text-gray-200'
       }`}
     >
       {label}
@@ -33,7 +34,7 @@ export default function Layout() {
           </Link>
           <nav className="flex items-center gap-6">
             {navLink('/', 'Dashboard')}
-            {navLink('/tickets/new', 'New Ticket')}
+            {navLink('/?new', 'New Ticket', hasNewParam)}
           </nav>
         </div>
       </header>
