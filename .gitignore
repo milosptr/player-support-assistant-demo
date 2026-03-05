@@ -31,3 +31,7 @@ Thumbs.db
 *.swp
 *.swo
 
+# Local
+.claude/
+.agents/
+*-lock.json
