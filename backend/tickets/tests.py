@@ -192,7 +192,7 @@ class AIServiceTest(TestCase):
             'message': 'I was docking at Jita 4-4 and my Tengu just vanished from the hangar.',
         }
 
-    def _mock_openrouter_response(self, content):
+    def _mock_gemini_response(self, content):
         mock_resp = MagicMock()
         mock_resp.status_code = 200
         mock_resp.json.return_value = {
@@ -203,7 +203,7 @@ class AIServiceTest(TestCase):
     @patch('tickets.ai_service.requests.post')
     @patch.dict('os.environ', {'GEMINI_API_KEY': 'test-key'})
     def test_create_ticket_with_ai_success(self, mock_post):
-        mock_post.return_value = self._mock_openrouter_response(
+        mock_post.return_value = self._mock_gemini_response(
             '{"category": "bug", "response": "I\'ve logged this docking issue."}'
         )
         response = self.client.post('/api/tickets/', self.ticket_data, format='json')
@@ -233,7 +233,7 @@ class AIServiceTest(TestCase):
     @patch('tickets.ai_service.requests.post')
     @patch.dict('os.environ', {'GEMINI_API_KEY': 'test-key'})
     def test_create_ticket_ai_invalid_category(self, mock_post):
-        mock_post.return_value = self._mock_openrouter_response(
+        mock_post.return_value = self._mock_gemini_response(
             '{"category": "invalid_cat", "response": "Some response"}'
         )
         response = self.client.post('/api/tickets/', self.ticket_data, format='json')
@@ -260,7 +260,7 @@ class AIServiceTest(TestCase):
             player_name='TestPilot', subject='Ship stuck', message='My ship is stuck in warp.',
             category='bug', ai_category='bug', ai_response='Original response.',
         )
-        mock_post.return_value = self._mock_openrouter_response(
+        mock_post.return_value = self._mock_gemini_response(
             '{"category": "gameplay", "response": "New regenerated response."}'
         )
         response = self.client.post(f'/api/tickets/{ticket.id}/regenerate/')
@@ -288,7 +288,7 @@ class AIServiceTest(TestCase):
     @patch('tickets.ai_service.requests.post')
     @patch.dict('os.environ', {'GEMINI_API_KEY': 'test-key'})
     def test_create_ticket_ai_markdown_wrapped_json(self, mock_post):
-        mock_post.return_value = self._mock_openrouter_response(
+        mock_post.return_value = self._mock_gemini_response(
             '```json\n{"category": "gameplay", "response": "Try adjusting your extractors."}\n```'
         )
         response = self.client.post('/api/tickets/', self.ticket_data, format='json')
